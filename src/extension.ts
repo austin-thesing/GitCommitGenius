@@ -4,6 +4,7 @@ import { SummaryGenerator } from './summaryGenerator';
 import { ExternalGitClient } from './externalGitClient';
 import { CommitAnalyzer } from './commitAnalyzer';
 import { upgradeToPremium } from './stripeIntegration';
+import { ProjectManagementIntegration } from './projectManagementIntegration';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Git Commit Summarizer is now active!');
@@ -12,6 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
     const summaryGenerator = new SummaryGenerator();
     const externalGitClient = new ExternalGitClient();
     const commitAnalyzer = new CommitAnalyzer(gitManager, summaryGenerator);
+    const projectManagementIntegration = new ProjectManagementIntegration();
 
     let generateCommitSummary = vscode.commands.registerCommand('extension.generateCommitSummary', async () => {
         try {
@@ -34,16 +36,17 @@ export function activate(context: vscode.ExtensionContext) {
             const result = await vscode.window.showInputBox({
                 prompt: 'Generated Commit Summary' + (subscriptionTier === 'premium' ? ' (based on history)' : ''),
                 value: suggestion,
-                placeHolder: 'Edit the summary if needed'
+                placeHolder: 'Edit the summary if needed. Add #issue_number to link to an issue.'
             });
 
             if (result) {
+                const linkedCommitMessage = await projectManagementIntegration.linkCommitToIssue(result);
                 const externalClient = config.get<string>('externalGitClient');
 
                 if (externalClient === 'Tower') {
-                    await externalGitClient.commitWithTower(result);
+                    await externalGitClient.commitWithTower(linkedCommitMessage);
                 } else {
-                    await gitManager.commit(result);
+                    await gitManager.commit(linkedCommitMessage);
                 }
 
                 vscode.window.showInformationMessage('Commit successful!');

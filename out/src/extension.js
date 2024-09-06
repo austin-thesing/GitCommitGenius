@@ -7,12 +7,14 @@ const summaryGenerator_1 = require("./summaryGenerator");
 const externalGitClient_1 = require("./externalGitClient");
 const commitAnalyzer_1 = require("./commitAnalyzer");
 const stripeIntegration_1 = require("./stripeIntegration");
+const projectManagementIntegration_1 = require("./projectManagementIntegration");
 function activate(context) {
     console.log('Git Commit Summarizer is now active!');
     const gitManager = new gitManager_1.GitManager();
     const summaryGenerator = new summaryGenerator_1.SummaryGenerator();
     const externalGitClient = new externalGitClient_1.ExternalGitClient();
     const commitAnalyzer = new commitAnalyzer_1.CommitAnalyzer(gitManager, summaryGenerator);
+    const projectManagementIntegration = new projectManagementIntegration_1.ProjectManagementIntegration();
     let generateCommitSummary = vscode.commands.registerCommand('extension.generateCommitSummary', async () => {
         try {
             const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
@@ -32,15 +34,16 @@ function activate(context) {
             const result = await vscode.window.showInputBox({
                 prompt: 'Generated Commit Summary' + (subscriptionTier === 'premium' ? ' (based on history)' : ''),
                 value: suggestion,
-                placeHolder: 'Edit the summary if needed'
+                placeHolder: 'Edit the summary if needed. Add #issue_number to link to an issue.'
             });
             if (result) {
+                const linkedCommitMessage = await projectManagementIntegration.linkCommitToIssue(result);
                 const externalClient = config.get('externalGitClient');
                 if (externalClient === 'Tower') {
-                    await externalGitClient.commitWithTower(result);
+                    await externalGitClient.commitWithTower(linkedCommitMessage);
                 }
                 else {
-                    await gitManager.commit(result);
+                    await gitManager.commit(linkedCommitMessage);
                 }
                 vscode.window.showInformationMessage('Commit successful!');
             }
