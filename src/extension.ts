@@ -19,6 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
         try {
             const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
             const subscriptionTier = config.get<string>('subscriptionTier') || 'free';
+            const summaryDetailLevel = config.get<string>('summaryDetailLevel') || 'standard';
 
             const stagedChanges = await gitManager.getStagedChanges();
             if (!stagedChanges) {
@@ -34,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
             
             const result = await vscode.window.showInputBox({
-                prompt: 'Generated Commit Summary' + (subscriptionTier === 'premium' ? ' (based on history)' : ''),
+                prompt: `Generated Commit Summary (${summaryDetailLevel} detail)` + (subscriptionTier === 'premium' ? ' (based on history)' : ''),
                 value: suggestion,
                 placeHolder: 'Edit the summary if needed. Add #issue_number to link to an issue.'
             });

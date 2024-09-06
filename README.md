@@ -1,6 +1,6 @@
 # Git Commit Summarizer
 
-This VSCode extension generates git commit summaries using NLP, integrates with external git clients, offers premium features for advanced commit analysis, and now includes project management integration to link commits to issues.
+This VSCode extension generates git commit summaries using NLP, integrates with external git clients, offers premium features for advanced commit analysis, and includes project management integration to link commits to issues.
 
 ## Features
 
@@ -11,6 +11,7 @@ This VSCode extension generates git commit summaries using NLP, integrates with 
 - Integration with external git clients (currently supports Tower)
 - Premium tier with advanced features and higher token limits
 - Link commits to GitHub issues automatically
+- Customizable summary detail levels (concise, standard, detailed)
 
 ## Requirements
 
@@ -31,6 +32,7 @@ This extension contributes the following settings:
 * `gitCommitSummarizer.summaryModel`: Model to use for generating summaries (OpenAI or Cloudflare)
 * `gitCommitSummarizer.cloudflareWorkerUrl`: URL of the Cloudflare Worker for generating summaries (required if using Cloudflare model)
 * `gitCommitSummarizer.summaryStyle`: Style of the generated commit summary (default, conventional, or detailed)
+* `gitCommitSummarizer.summaryDetailLevel`: Level of detail for the generated commit summary (concise, standard, or detailed)
 * `gitCommitSummarizer.subscriptionTier`: User's subscription tier (free or premium)
 * `gitCommitSummarizer.githubToken`: GitHub Personal Access Token for linking commits to issues
 
@@ -50,11 +52,21 @@ To upgrade to the premium tier:
 
 ## Project Management Integration
 
-The extension now supports linking commits to GitHub issues. To use this feature:
+The extension supports linking commits to GitHub issues. To use this feature:
 
 1. Set your GitHub Personal Access Token in the extension settings (`gitCommitSummarizer.githubToken`)
 2. When creating a commit, include the issue number in the commit message (e.g., "Fix bug #123")
 3. The extension will automatically link the commit to the specified issue on GitHub
+
+## Summary Detail Levels
+
+You can now choose between three levels of summary detail:
+
+1. Concise: Provides a very brief summary focusing on the main change only.
+2. Standard: Includes the main changes and their purpose (default).
+3. Detailed: Offers a comprehensive summary including all relevant changes and their potential impacts.
+
+To change the summary detail level, update the `gitCommitSummarizer.summaryDetailLevel` setting in your VSCode settings.
 
 ## Running and Testing the Extension
 
@@ -86,6 +98,11 @@ To test the extension locally:
 - Project management integration is limited to GitHub issues at the moment
 
 ## Release Notes
+
+### 0.0.6
+
+- Added customizable summary detail levels (concise, standard, detailed)
+- Updated README with information about the new feature and configuration
 
 ### 0.0.5
 
