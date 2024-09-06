@@ -50,6 +50,16 @@
           "type": "string",
           "default": "",
           "description": "URL of the Cloudflare Worker for generating summaries (required if using Cloudflare model)"
+        },
+        "gitCommitSummarizer.summaryStyle": {
+          "type": "string",
+          "enum": [
+            "default",
+            "conventional",
+            "detailed"
+          ],
+          "default": "default",
+          "description": "Style of the generated commit summary"
         }
       }
     }

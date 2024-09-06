@@ -9,16 +9,19 @@ class SummaryGenerator {
         const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
         this.apiKey = config.get('openaiApiKey') || '';
         this.summaryModel = config.get('summaryModel') || 'OpenAI';
+        this.summaryStyle = config.get('summaryStyle') || 'default';
         const cloudflareWorkerUrl = config.get('cloudflareWorkerUrl') || '';
         this.cloudflareModel = new cloudflareModel_1.CloudflareModel(cloudflareWorkerUrl);
     }
     async generateSummary(stagedChanges) {
+        let summary;
         if (this.summaryModel === 'OpenAI') {
-            return this.generateOpenAISummary(stagedChanges);
+            summary = await this.generateOpenAISummary(stagedChanges);
         }
         else {
-            return this.cloudflareModel.generateSummary(stagedChanges);
+            summary = await this.cloudflareModel.generateSummary(stagedChanges);
         }
+        return this.formatSummary(summary);
     }
     async generateOpenAISummary(stagedChanges) {
         if (!this.apiKey) {
@@ -44,6 +47,30 @@ class SummaryGenerator {
             console.error('Error generating summary with OpenAI:', error);
             throw new Error('Failed to generate summary with OpenAI. Please check your OpenAI API key and try again.');
         }
+    }
+    formatSummary(summary) {
+        switch (this.summaryStyle) {
+            case 'conventional':
+                return this.formatConventionalCommit(summary);
+            case 'detailed':
+                return this.formatDetailedSummary(summary);
+            default:
+                return summary;
+        }
+    }
+    formatConventionalCommit(summary) {
+        const types = ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore'];
+        const lines = summary.split('\n');
+        const type = types.find(t => lines[0].toLowerCase().includes(t)) || 'chore';
+        const shortDescription = lines[0].replace(/^[a-z]+:?\s*/i, '');
+        const body = lines.slice(1).join('\n').trim();
+        return `${type}: ${shortDescription}\n\n${body}`;
+    }
+    formatDetailedSummary(summary) {
+        const lines = summary.split('\n');
+        const title = lines[0];
+        const body = lines.slice(1).join('\n').trim();
+        return `${title}\n\nDetails:\n${body}`;
     }
 }
 exports.SummaryGenerator = SummaryGenerator;
