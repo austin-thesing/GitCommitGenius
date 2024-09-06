@@ -26,8 +26,7 @@ export class GitManager {
         await this.git.commit(message);
     }
 
-    async getCommitHistory(limit: number = 10): Promise<string[]> {
-        const log = await this.git.log({ maxCount: limit });
-        return log.all.map(commit => `${commit.hash.slice(0, 7)} - ${commit.message}`);
+    async addChanges(files: string[]): Promise<void> {
+        await this.git.add(files);
     }
 }
