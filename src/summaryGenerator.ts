@@ -7,12 +7,14 @@ export class SummaryGenerator {
     private summaryModel: string;
     private cloudflareModel: CloudflareModel;
     private summaryStyle: string;
+    private subscriptionTier: string;
 
     constructor() {
         const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
         this.apiKey = config.get<string>('openaiApiKey') || '';
         this.summaryModel = config.get<string>('summaryModel') || 'OpenAI';
         this.summaryStyle = config.get<string>('summaryStyle') || 'default';
+        this.subscriptionTier = config.get<string>('subscriptionTier') || 'free';
         const cloudflareWorkerUrl = config.get<string>('cloudflareWorkerUrl') || '';
         this.cloudflareModel = new CloudflareModel(cloudflareWorkerUrl);
     }
@@ -35,15 +37,18 @@ export class SummaryGenerator {
         }
 
         try {
+            const model = this.subscriptionTier === 'premium' ? 'gpt-4' : 'gpt-3.5-turbo';
+            const maxTokens = this.subscriptionTier === 'premium' ? 150 : 100;
+
             const response = await axios.post(
                 'https://api.openai.com/v1/chat/completions',
                 {
-                    model: 'gpt-4',
+                    model: model,
                     messages: [
                         { role: 'system', content: 'You are a helpful assistant that generates concise git commit summaries.' },
                         { role: 'user', content: `Generate a concise git commit summary for the following changes:\n\n${stagedChanges}` }
                     ],
-                    max_tokens: 100
+                    max_tokens: maxTokens
                 },
                 {
                     headers: {

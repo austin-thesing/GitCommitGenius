@@ -2,7 +2,7 @@
   "name": "git-commit-summarizer",
   "displayName": "Git Commit Summarizer",
   "description": "Generate git commit summaries using NLP and integrate with external git clients",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.generateCommitSummary"
+    "onCommand:extension.generateCommitSummary",
+    "onCommand:extension.upgradeToPremium"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,6 +19,10 @@
       {
         "command": "extension.generateCommitSummary",
         "title": "Generate Commit Summary"
+      },
+      {
+        "command": "extension.upgradeToPremium",
+        "title": "Upgrade to Premium"
       }
     ],
     "configuration": {
@@ -60,6 +65,15 @@
           ],
           "default": "default",
           "description": "Style of the generated commit summary"
+        },
+        "gitCommitSummarizer.subscriptionTier": {
+          "type": "string",
+          "enum": [
+            "free",
+            "premium"
+          ],
+          "default": "free",
+          "description": "User's subscription tier"
         }
       }
     }
@@ -80,6 +94,8 @@
   "dependencies": {
     "@types/vscode": "^1.93.0",
     "axios": "^0.27.2",
-    "simple-git": "^3.26.0"
+    "simple-git": "^3.26.0",
+    "stripe": "^8.222.0",
+    "ts-node": "^10.9.2"
   }
 }

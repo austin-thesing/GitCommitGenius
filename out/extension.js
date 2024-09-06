@@ -5,11 +5,13 @@ const vscode = require("vscode");
 const gitManager_1 = require("./gitManager");
 const summaryGenerator_1 = require("./summaryGenerator");
 const externalGitClient_1 = require("./externalGitClient");
+const commitAnalyzer_1 = require("./commitAnalyzer");
 function activate(context) {
     console.log('Git Commit Summarizer is now active!');
     const gitManager = new gitManager_1.GitManager();
     const summaryGenerator = new summaryGenerator_1.SummaryGenerator();
     const externalGitClient = new externalGitClient_1.ExternalGitClient();
+    const commitAnalyzer = new commitAnalyzer_1.CommitAnalyzer(gitManager, summaryGenerator);
     let disposable = vscode.commands.registerCommand('extension.generateCommitSummary', async () => {
         try {
             const stagedChanges = await gitManager.getStagedChanges();
@@ -17,10 +19,10 @@ function activate(context) {
                 vscode.window.showInformationMessage('No staged changes found.');
                 return;
             }
-            const summary = await summaryGenerator.generateSummary(stagedChanges);
+            const suggestion = await commitAnalyzer.analyzeAndSuggest(stagedChanges);
             const result = await vscode.window.showInputBox({
-                prompt: 'Generated Commit Summary',
-                value: summary,
+                prompt: 'Generated Commit Summary (based on history)',
+                value: suggestion,
                 placeHolder: 'Edit the summary if needed'
             });
             if (result) {

@@ -19,6 +19,10 @@ args = "Compile and Run Extension"
 task = "workflow.run"
 args = "Compile Extension"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test CommitAnalyzer"
+
 [[workflows.workflow]]
 name = "Compile and Run Extension"
 author = "agent"
@@ -40,6 +44,17 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run compile"
+
+[[workflows.workflow]]
+name = "Test CommitAnalyzer"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx ts-node test_commit_analyzer.ts"
 
 [deployment]
 run = ["sh", "-c", "npm run compile && code --extensionDevelopmentPath=."]

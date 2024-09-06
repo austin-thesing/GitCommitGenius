@@ -1,13 +1,15 @@
 # Git Commit Summarizer
 
-This VSCode extension generates git commit summaries using NLP and integrates with external git clients.
+This VSCode extension generates git commit summaries using NLP, integrates with external git clients, and offers premium features for advanced commit analysis.
 
 ## Features
 
 - Analyze current code changes in the git staging area
-- Generate concise summaries of changes using OpenAI's GPT-4 or a Cloudflare-compatible model
+- Generate concise summaries of changes using OpenAI's GPT-3.5 or GPT-4 (premium) or a Cloudflare-compatible model
+- Analyze commit history and suggest related changes (premium feature)
 - Easily copy or directly use generated summaries for commit messages
 - Integration with external git clients (currently supports Tower)
+- Premium tier with advanced features and higher token limits
 
 ## Requirements
 
@@ -26,6 +28,22 @@ This extension contributes the following settings:
 * `gitCommitSummarizer.externalGitClient`: External Git client to integrate with (None or Tower)
 * `gitCommitSummarizer.summaryModel`: Model to use for generating summaries (OpenAI or Cloudflare)
 * `gitCommitSummarizer.cloudflareWorkerUrl`: URL of the Cloudflare Worker for generating summaries (required if using Cloudflare model)
+* `gitCommitSummarizer.summaryStyle`: Style of the generated commit summary (default, conventional, or detailed)
+* `gitCommitSummarizer.subscriptionTier`: User's subscription tier (free or premium)
+
+## Premium Features
+
+The premium tier offers the following advanced features:
+
+1. Commit history analysis: Analyzes your recent commits to suggest more contextual and relevant commit messages.
+2. Advanced AI model: Uses GPT-4 for generating summaries, providing more accurate and detailed results.
+3. Higher token limits: Allows for longer and more detailed commit summaries.
+
+To upgrade to the premium tier:
+
+1. Open the Command Palette (Ctrl+Shift+P)
+2. Run the command "Upgrade to Premium"
+3. Follow the Stripe checkout process to complete your subscription
 
 ## Running and Testing the Extension
 
@@ -40,7 +58,7 @@ To test the extension locally:
 5. Open a Git repository in the new window.
 6. Make some changes to files in the repository and stage them.
 7. Run the command "Generate Commit Summary" from the Command Palette (Ctrl+Shift+P).
-8. The extension will generate a summary based on your staged changes.
+8. If you're a premium user, the extension will analyze the commit history, generate a summary based on your staged changes, and suggest related changes.
 9. Edit the summary if needed and confirm to create a commit.
 
 ## Troubleshooting
@@ -48,6 +66,7 @@ To test the extension locally:
 - If you encounter any issues with the OpenAI model, ensure that you have set a valid API key in the extension settings.
 - For Cloudflare model issues, check that you have provided a valid Cloudflare Worker URL in the settings.
 - If the extension fails to detect staged changes, make sure you have staged your changes using Git before running the "Generate Commit Summary" command.
+- If you're unable to access premium features after upgrading, try reloading the VS Code window or checking your subscription status in the extension settings.
 
 ## Known Issues
 
@@ -55,14 +74,24 @@ To test the extension locally:
 
 ## Release Notes
 
-### 0.0.1
+### 0.0.4
 
-Initial release of Git Commit Summarizer
+- Added premium tier with Stripe integration
+- Implemented commit history analysis for premium users
+- Updated to use GPT-4 for premium users
+
+### 0.0.3
+
+- Added support for analyzing commit history and suggesting related changes
 
 ### 0.0.2
 
 - Added support for customizable summary styles
 - Implemented option to choose between OpenAI and Cloudflare-compatible models for summary generation
+
+### 0.0.1
+
+Initial release of Git Commit Summarizer
 
 ---
 
