@@ -23,6 +23,10 @@ args = "Compile Extension"
 task = "workflow.run"
 args = "Test CommitAnalyzer"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Express Server"
+
 [[workflows.workflow]]
 name = "Compile and Run Extension"
 author = "agent"
@@ -56,5 +60,21 @@ agentRequireRestartOnSave = false
 task = "shell.exec"
 args = "npx ts-node test_commit_analyzer.ts"
 
+[[workflows.workflow]]
+name = "Express Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run start"
+waitForPort = 3000
+
 [deployment]
 run = ["sh", "-c", "npm run compile && code --extensionDevelopmentPath=."]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
