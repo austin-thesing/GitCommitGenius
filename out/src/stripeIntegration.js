@@ -17,14 +17,18 @@ class StripeIntegration {
                             currency: 'usd',
                             product_data: {
                                 name: 'Git Commit Summarizer Premium',
+                                description: 'Unlimited summaries and advanced features',
                             },
-                            unit_amount: 999, // $9.99
+                            unit_amount: 999,
+                            recurring: {
+                                interval: 'month',
+                            },
                         },
                         quantity: 1,
                     },
                 ],
                 mode: 'subscription',
-                success_url: 'https://example.com/success',
+                success_url: 'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',
                 cancel_url: 'https://example.com/cancel',
             });
             return session.url || '';

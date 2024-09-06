@@ -2,7 +2,7 @@
   "name": "git-commit-summarizer",
   "displayName": "Git Commit Summarizer",
   "description": "Generate git commit summaries using NLP and integrate with external git clients",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -84,6 +84,11 @@
           ],
           "default": "free",
           "description": "User's subscription tier"
+        },
+        "gitCommitSummarizer.customerId": {
+          "type": "string",
+          "default": "",
+          "description": "Stripe Customer ID for premium users"
         },
         "gitCommitSummarizer.githubToken": {
           "type": "string",

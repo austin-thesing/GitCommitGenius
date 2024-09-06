@@ -10,11 +10,18 @@ class SummaryGenerator {
         this.apiKey = config.get('openaiApiKey') || '';
         this.summaryModel = config.get('summaryModel') || 'OpenAI';
         this.summaryStyle = config.get('summaryStyle') || 'default';
+        this.summaryDetailLevel = config.get('summaryDetailLevel') || 'standard';
         this.subscriptionTier = config.get('subscriptionTier') || 'free';
         const cloudflareWorkerUrl = config.get('cloudflareWorkerUrl') || '';
         this.cloudflareModel = new cloudflareModel_1.CloudflareModel(cloudflareWorkerUrl);
+        this.weeklySummaryCount = 0;
+        this.lastResetDate = new Date();
     }
     async generateSummary(stagedChanges) {
+        this.resetWeeklyCounterIfNeeded();
+        if (this.subscriptionTier === 'free' && this.weeklySummaryCount >= 10) {
+            throw new Error('Weekly summary limit reached. Please upgrade to premium for unlimited summaries.');
+        }
         let summary;
         if (this.summaryModel === 'OpenAI') {
             summary = await this.generateOpenAISummary(stagedChanges);
@@ -22,7 +29,18 @@ class SummaryGenerator {
         else {
             summary = await this.cloudflareModel.generateSummary(stagedChanges);
         }
+        if (this.subscriptionTier === 'free') {
+            this.weeklySummaryCount++;
+        }
         return this.formatSummary(summary);
+    }
+    resetWeeklyCounterIfNeeded() {
+        const currentDate = new Date();
+        const daysSinceLastReset = (currentDate.getTime() - this.lastResetDate.getTime()) / (1000 * 3600 * 24);
+        if (daysSinceLastReset >= 7) {
+            this.weeklySummaryCount = 0;
+            this.lastResetDate = currentDate;
+        }
     }
     async generateOpenAISummary(stagedChanges) {
         if (!this.apiKey) {
@@ -30,12 +48,12 @@ class SummaryGenerator {
         }
         try {
             const model = this.subscriptionTier === 'premium' ? 'gpt-4' : 'gpt-3.5-turbo';
-            const maxTokens = this.subscriptionTier === 'premium' ? 150 : 100;
+            const maxTokens = this.getMaxTokens();
             const response = await axios_1.default.post('https://api.openai.com/v1/chat/completions', {
                 model: model,
                 messages: [
-                    { role: 'system', content: 'You are a helpful assistant that generates concise git commit summaries.' },
-                    { role: 'user', content: `Generate a concise git commit summary for the following changes:\n\n${stagedChanges}` }
+                    { role: 'system', content: this.getSystemPrompt() },
+                    { role: 'user', content: `Generate a ${this.summaryDetailLevel} git commit summary for the following changes:\n\n${stagedChanges}` }
                 ],
                 max_tokens: maxTokens
             }, {
@@ -74,6 +92,33 @@ class SummaryGenerator {
         const title = lines[0];
         const body = lines.slice(1).join('\n').trim();
         return `${title}\n\nDetails:\n${body}`;
+    }
+    getMaxTokens() {
+        if (this.subscriptionTier === 'premium') {
+            return 1000; // Unlimited tokens for premium users
+        }
+        switch (this.summaryDetailLevel) {
+            case 'concise':
+                return 50;
+            case 'detailed':
+                return 150;
+            default: // standard
+                return 100;
+        }
+    }
+    getSystemPrompt() {
+        const basePrompt = 'You are a helpful assistant that generates git commit summaries.';
+        if (this.subscriptionTier === 'premium') {
+            return `${basePrompt} As this is for a premium user, provide a comprehensive and insightful summary without any limitations.`;
+        }
+        switch (this.summaryDetailLevel) {
+            case 'concise':
+                return `${basePrompt} Focus on the main change only.`;
+            case 'detailed':
+                return `${basePrompt} Include all relevant changes and their potential impacts.`;
+            default: // standard
+                return `${basePrompt} Include the main changes and their purpose.`;
+        }
     }
 }
 exports.SummaryGenerator = SummaryGenerator;

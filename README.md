@@ -9,9 +9,22 @@ This VSCode extension generates git commit summaries using NLP, integrates with 
 - Analyze commit history and suggest related changes (premium feature)
 - Easily copy or directly use generated summaries for commit messages
 - Integration with external git clients (currently supports Tower)
-- Premium tier with advanced features and higher token limits
+- Premium tier with advanced features, higher token limits, and unlimited summaries
 - Link commits to GitHub issues automatically
 - Customizable summary detail levels (concise, standard, detailed)
+
+## Free vs Premium Tiers
+
+### Free Tier
+- Limited to 10 summaries per week
+- Uses GPT-3.5 for generating summaries
+- Standard token limits
+
+### Premium Tier
+- Unlimited summaries
+- Uses GPT-4 for more accurate and detailed summaries
+- Higher token limits
+- Commit history analysis for more contextual summaries
 
 ## Requirements
 
@@ -35,14 +48,16 @@ This extension contributes the following settings:
 * `gitCommitSummarizer.summaryDetailLevel`: Level of detail for the generated commit summary (concise, standard, or detailed)
 * `gitCommitSummarizer.subscriptionTier`: User's subscription tier (free or premium)
 * `gitCommitSummarizer.githubToken`: GitHub Personal Access Token for linking commits to issues
+* `gitCommitSummarizer.customerId`: Stripe Customer ID for premium users
 
 ## Premium Features
 
 The premium tier offers the following advanced features:
 
-1. Commit history analysis: Analyzes your recent commits to suggest more contextual and relevant commit messages.
-2. Advanced AI model: Uses GPT-4 for generating summaries, providing more accurate and detailed results.
-3. Higher token limits: Allows for longer and more detailed commit summaries.
+1. Unlimited summaries: No weekly limit on the number of summaries generated.
+2. Commit history analysis: Analyzes your recent commits to suggest more contextual and relevant commit messages.
+3. Advanced AI model: Uses GPT-4 for generating summaries, providing more accurate and detailed results.
+4. Higher token limits: Allows for longer and more detailed commit summaries when needed.
 
 To upgrade to the premium tier:
 
@@ -81,8 +96,9 @@ To test the extension locally:
 5. Open a Git repository in the new window.
 6. Make some changes to files in the repository and stage them.
 7. Run the command "Generate Commit Summary" from the Command Palette (Ctrl+Shift+P).
-8. If you're a premium user, the extension will analyze the commit history, generate a summary based on your staged changes, and suggest related changes.
-9. Edit the summary if needed, add an issue number if applicable, and confirm to create a commit.
+8. If you're a premium user, the extension will analyze the commit history, generate a summary based on your staged changes, and suggest related changes with no limitations.
+9. If you're a free user, you'll be limited to 10 summaries per week. After reaching the limit, you'll be prompted to upgrade to premium.
+10. Edit the summary if needed, add an issue number if applicable, and confirm to create a commit.
 
 ## Troubleshooting
 
@@ -91,6 +107,7 @@ To test the extension locally:
 - If the extension fails to detect staged changes, make sure you have staged your changes using Git before running the "Generate Commit Summary" command.
 - If you're unable to access premium features after upgrading, try reloading the VS Code window or checking your subscription status in the extension settings.
 - If commits are not being linked to GitHub issues, ensure that you have set a valid GitHub Personal Access Token in the extension settings and that you're including the issue number in the commit message.
+- If you've reached your weekly summary limit as a free user, you'll be prompted to upgrade to premium. You can wait for the limit to reset (which happens automatically every 7 days) or upgrade to continue using the extension without limitations.
 
 ## Known Issues
 
@@ -98,6 +115,18 @@ To test the extension locally:
 - Project management integration is limited to GitHub issues at the moment
 
 ## Release Notes
+
+### 0.0.8
+
+- Implemented weekly limit of 10 summaries for free users
+- Added unlimited summaries for premium users
+- Updated extension to handle free users reaching their weekly limit
+- Updated README with information about the new free and premium tier features
+
+### 0.0.7
+
+- Implemented unlimited summaries for premium users
+- Updated README with information about the new unlimited summaries feature
 
 ### 0.0.6
 

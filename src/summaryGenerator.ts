@@ -9,6 +9,8 @@ export class SummaryGenerator {
     private summaryStyle: string;
     private summaryDetailLevel: string;
     private subscriptionTier: string;
+    private weeklySummaryCount: number;
+    private lastResetDate: Date;
 
     constructor() {
         const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
@@ -19,9 +21,17 @@ export class SummaryGenerator {
         this.subscriptionTier = config.get<string>('subscriptionTier') || 'free';
         const cloudflareWorkerUrl = config.get<string>('cloudflareWorkerUrl') || '';
         this.cloudflareModel = new CloudflareModel(cloudflareWorkerUrl);
+        this.weeklySummaryCount = 0;
+        this.lastResetDate = new Date();
     }
 
     async generateSummary(stagedChanges: string): Promise<string> {
+        this.resetWeeklyCounterIfNeeded();
+
+        if (this.subscriptionTier === 'free' && this.weeklySummaryCount >= 10) {
+            throw new Error('Weekly summary limit reached. Please upgrade to premium for unlimited summaries.');
+        }
+
         let summary: string;
 
         if (this.summaryModel === 'OpenAI') {
@@ -30,7 +40,21 @@ export class SummaryGenerator {
             summary = await this.cloudflareModel.generateSummary(stagedChanges);
         }
 
+        if (this.subscriptionTier === 'free') {
+            this.weeklySummaryCount++;
+        }
+
         return this.formatSummary(summary);
+    }
+
+    private resetWeeklyCounterIfNeeded(): void {
+        const currentDate = new Date();
+        const daysSinceLastReset = (currentDate.getTime() - this.lastResetDate.getTime()) / (1000 * 3600 * 24);
+        
+        if (daysSinceLastReset >= 7) {
+            this.weeklySummaryCount = 0;
+            this.lastResetDate = currentDate;
+        }
     }
 
     private async generateOpenAISummary(stagedChanges: string): Promise<string> {
@@ -97,24 +121,31 @@ export class SummaryGenerator {
     }
 
     private getMaxTokens(): number {
+        if (this.subscriptionTier === 'premium') {
+            return 1000; // Unlimited tokens for premium users
+        }
         switch (this.summaryDetailLevel) {
             case 'concise':
-                return this.subscriptionTier === 'premium' ? 100 : 50;
+                return 50;
             case 'detailed':
-                return this.subscriptionTier === 'premium' ? 250 : 150;
+                return 150;
             default: // standard
-                return this.subscriptionTier === 'premium' ? 150 : 100;
+                return 100;
         }
     }
 
     private getSystemPrompt(): string {
+        const basePrompt = 'You are a helpful assistant that generates git commit summaries.';
+        if (this.subscriptionTier === 'premium') {
+            return `${basePrompt} As this is for a premium user, provide a comprehensive and insightful summary without any limitations.`;
+        }
         switch (this.summaryDetailLevel) {
             case 'concise':
-                return 'You are a helpful assistant that generates very brief git commit summaries. Focus on the main change only.';
+                return `${basePrompt} Focus on the main change only.`;
             case 'detailed':
-                return 'You are a helpful assistant that generates detailed git commit summaries. Include all relevant changes and their potential impacts.';
+                return `${basePrompt} Include all relevant changes and their potential impacts.`;
             default: // standard
-                return 'You are a helpful assistant that generates concise git commit summaries. Include the main changes and their purpose.';
+                return `${basePrompt} Include the main changes and their purpose.`;
         }
     }
 }

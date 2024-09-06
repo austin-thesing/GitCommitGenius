@@ -19,20 +19,44 @@ function activate(context) {
         try {
             const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
             const subscriptionTier = config.get('subscriptionTier') || 'free';
+            const summaryDetailLevel = config.get('summaryDetailLevel') || 'standard';
+            const customerId = config.get('customerId') || '';
+            if (subscriptionTier === 'premium' && customerId) {
+                const isSubscriptionActive = await stripeIntegration_1.StripeIntegration.verifySubscription(customerId);
+                if (!isSubscriptionActive) {
+                    const response = await vscode.window.showWarningMessage('Your premium subscription has expired. Would you like to renew?', 'Yes', 'No');
+                    if (response === 'Yes') {
+                        await (0, stripeIntegration_1.upgradeToPremium)();
+                    }
+                    return;
+                }
+            }
             const stagedChanges = await gitManager.getStagedChanges();
             if (!stagedChanges) {
                 vscode.window.showInformationMessage('No staged changes found.');
                 return;
             }
             let suggestion;
-            if (subscriptionTier === 'premium') {
-                suggestion = await commitAnalyzer.analyzeAndSuggest(stagedChanges);
+            try {
+                if (subscriptionTier === 'premium') {
+                    suggestion = await commitAnalyzer.analyzeAndSuggest(stagedChanges);
+                }
+                else {
+                    suggestion = await summaryGenerator.generateSummary(stagedChanges);
+                }
             }
-            else {
-                suggestion = await summaryGenerator.generateSummary(stagedChanges);
+            catch (error) {
+                if (error instanceof Error && error.message.includes('Weekly summary limit reached')) {
+                    const response = await vscode.window.showWarningMessage('You have reached your weekly summary limit. Would you like to upgrade to premium for unlimited summaries?', 'Yes', 'No');
+                    if (response === 'Yes') {
+                        await (0, stripeIntegration_1.upgradeToPremium)();
+                    }
+                    return;
+                }
+                throw error;
             }
             const result = await vscode.window.showInputBox({
-                prompt: 'Generated Commit Summary' + (subscriptionTier === 'premium' ? ' (based on history)' : ''),
+                prompt: `Generated Commit Summary (${summaryDetailLevel} detail)` + (subscriptionTier === 'premium' ? ' (based on history)' : ''),
                 value: suggestion,
                 placeHolder: 'Edit the summary if needed. Add #issue_number to link to an issue.'
             });

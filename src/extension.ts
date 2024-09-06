@@ -3,7 +3,7 @@ import { GitManager } from './gitManager';
 import { SummaryGenerator } from './summaryGenerator';
 import { ExternalGitClient } from './externalGitClient';
 import { CommitAnalyzer } from './commitAnalyzer';
-import { upgradeToPremium } from './stripeIntegration';
+import { upgradeToPremium, StripeIntegration } from './stripeIntegration';
 import { ProjectManagementIntegration } from './projectManagementIntegration';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -20,6 +20,18 @@ export function activate(context: vscode.ExtensionContext) {
             const config = vscode.workspace.getConfiguration('gitCommitSummarizer');
             const subscriptionTier = config.get<string>('subscriptionTier') || 'free';
             const summaryDetailLevel = config.get<string>('summaryDetailLevel') || 'standard';
+            const customerId = config.get<string>('customerId') || '';
+
+            if (subscriptionTier === 'premium' && customerId) {
+                const isSubscriptionActive = await StripeIntegration.verifySubscription(customerId);
+                if (!isSubscriptionActive) {
+                    const response = await vscode.window.showWarningMessage('Your premium subscription has expired. Would you like to renew?', 'Yes', 'No');
+                    if (response === 'Yes') {
+                        await upgradeToPremium();
+                    }
+                    return;
+                }
+            }
 
             const stagedChanges = await gitManager.getStagedChanges();
             if (!stagedChanges) {
@@ -28,10 +40,21 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             let suggestion: string;
-            if (subscriptionTier === 'premium') {
-                suggestion = await commitAnalyzer.analyzeAndSuggest(stagedChanges);
-            } else {
-                suggestion = await summaryGenerator.generateSummary(stagedChanges);
+            try {
+                if (subscriptionTier === 'premium') {
+                    suggestion = await commitAnalyzer.analyzeAndSuggest(stagedChanges);
+                } else {
+                    suggestion = await summaryGenerator.generateSummary(stagedChanges);
+                }
+            } catch (error) {
+                if (error instanceof Error && error.message.includes('Weekly summary limit reached')) {
+                    const response = await vscode.window.showWarningMessage('You have reached your weekly summary limit. Would you like to upgrade to premium for unlimited summaries?', 'Yes', 'No');
+                    if (response === 'Yes') {
+                        await upgradeToPremium();
+                    }
+                    return;
+                }
+                throw error;
             }
             
             const result = await vscode.window.showInputBox({
