@@ -69,7 +69,7 @@ agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run start"
+args = "npm start"
 waitForPort = 3000
 
 [deployment]
