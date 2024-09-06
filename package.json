@@ -1,0 +1,75 @@
+{
+  "name": "git-commit-summarizer",
+  "displayName": "Git Commit Summarizer",
+  "description": "Generate git commit summaries using NLP and integrate with external git clients",
+  "version": "0.0.2",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:extension.generateCommitSummary"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.generateCommitSummary",
+        "title": "Generate Commit Summary"
+      }
+    ],
+    "configuration": {
+      "title": "Git Commit Summarizer",
+      "properties": {
+        "gitCommitSummarizer.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API Key for generating summaries"
+        },
+        "gitCommitSummarizer.externalGitClient": {
+          "type": "string",
+          "enum": [
+            "None",
+            "Tower"
+          ],
+          "default": "None",
+          "description": "External Git client to integrate with"
+        },
+        "gitCommitSummarizer.summaryModel": {
+          "type": "string",
+          "enum": [
+            "OpenAI",
+            "Cloudflare"
+          ],
+          "default": "OpenAI",
+          "description": "Model to use for generating summaries"
+        },
+        "gitCommitSummarizer.cloudflareWorkerUrl": {
+          "type": "string",
+          "default": "",
+          "description": "URL of the Cloudflare Worker for generating summaries (required if using Cloudflare model)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.108",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.57.0",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@types/vscode": "^1.93.0",
+    "axios": "^0.27.2",
+    "simple-git": "^3.26.0"
+  }
+}

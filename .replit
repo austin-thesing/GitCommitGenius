@@ -1,0 +1,45 @@
+modules = ["python-3.11", "nodejs-20"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Compile and Run Extension"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Compile Extension"
+
+[[workflows.workflow]]
+name = "Compile and Run Extension"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run compile && code --extensionDevelopmentPath=."
+
+[[workflows.workflow]]
+name = "Compile Extension"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run compile"
+
+[deployment]
+run = ["sh", "-c", "npm run compile && code --extensionDevelopmentPath=."]
